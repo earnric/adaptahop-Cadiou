@@ -1,0 +1,20 @@
+#!/bin/sh 
+#PBS -S /bin/sh 
+#PBS -j oe 
+#PBS -N HaloMaker
+#PBS -l nodes=b6:ppn=5,walltime=48:00:00 
+ 
+module (){
+    eval $(/usr/bin/modulecmd bash $*)
+}
+module load openmpi/1.8.8-ifort-15.0 
+export PATH="/home/pfister/anaconda2/bin:$PATH" 
+ 
+cd /home/pfister/data/TDE/TDE4/Halos/
+j=PBS_ARRAYID
+ 
+cd /home/pfister/data/TDE/TDE4/Galaxies/
+cd $j
+./GalFinder 2> log.out
+exit 0
+ 

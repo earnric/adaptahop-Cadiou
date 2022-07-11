@@ -1,0 +1,21 @@
+af             =  1.000   ! Today expansion factor == 1+zi
+lbox           =  142.04546 ! Size of the box at z=0 (NB: in Mpc! ==> 479 Mpc/h=684.286 Mpc)
+H_f            =  70.400  ! Hubble constant (in Km/s/Mpc) at z=0
+omega_f        =   0.272  ! Omega matter at z=0 (ex: 0.3)
+lambda_f       =   0.728  ! Omega lambda at z=0 (ex: 0.7)
+npart          =  50      ! Minimum number of particles per halo (ex:10)
+method         =  MSM     ! choose between FOF, HOP, MSM etc .. (view ReadMe for details).
+cdm            =  .false.
+b              =  0.02    ! fof parameter "b" (usually b=0.2)
+nvoisins       =  20      ! parameter for adaptahop (usually 20)
+nhop           =  20      ! parameter for adaptahop (usually 20)
+rhot           =  178.0   ! parameter for adaptahop (80 coreespond to b = 0.2)
+fudge          = 5.       ! parameter for adaptahop (usually 4.) 
+fudgepsilon    = 0.0004   ! parameter for adaptahop (usually 0.05)
+alphap         = 2.5      ! parameter for adaptahop (usually 1.)
+verbose        = .false.  ! verbose parameter for both halo finder
+megaverbose    = .false.  ! parameter for adaptahop
+nsteps         =  100     ! Number of time steps to analyse
+FlagPeriod     =  1       ! Periodic boundaries (1:True)
+dump_stars     = .true.
+nchem          = 7

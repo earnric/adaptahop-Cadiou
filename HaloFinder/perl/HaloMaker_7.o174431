@@ -1,0 +1,9 @@
+* JOBID: 174431.hzmaster
+* USER: pfister
+* GROUP: pfister
+* JOBNAME: HaloMaker_7
+* SESSIONID: 8886
+* RESOURCESLIST: neednodes=b6:ppn=5,nodes=b6:ppn=5,walltime=48:00:00
+* RESOURCESUSED: cput=00:00:02,mem=7568kb,vmem=308436kb,walltime=00:01:29
+* QUEUE: batch
+* JOB EXIT STATUS: 0

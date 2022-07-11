@@ -1,0 +1,219 @@
+
+------------------------------------------------------------------------------
+                              HaloMaker version 2.0.2
+------------------------------------------------------------------------------
+date: 18/06/2008
+------------------------------------------------------------------------------
+
+HaloMaker
+
+first version        :        S. Ninin    (1999)     
+modif.               :        J. Devriendt(1999-2002)
+modif.               :        B. Lanzoni & S. Hatton    (2000-2001)       
+galics v1.0          :        J. Blaizot & J. Devriendt (2002)      
+horizon v1.0         :        J. Devriendt & D. Tweed   (2006)    
+horizon v2.0         :        J. Devriendt & D. Tweed   (2006)    
+horizon v2.0.2       :        J. Devriendt, D. Tweed & J.Blaizot (2008)    
+
+Module Adaptahop
+program compute_neiKDtree                  : Stephane Colombi  (2003)
+modification, module compute_neiKDtree_mod : D. Tweed (2006)
+
+
+Module fof_mod
+version 2.0.2 : D. Tweed, J.Devriendt1 J. Blaizot
+
+Please report any bug to dylan.tweed@univ-lyon1.fr
+
+
+------------------------------------------------------------------------------
+HaloMaker is the first step of the pipeline GalICS, from the snapshot of a
+n-body simulation ( Gadget, Ramses, enzo, treecode). 
+It create a list of halo(and sub-halos). It also compute each halo properties
+such as its position, velocity, angular momentum, mass, energy...
+Its output are treebrick, this files contains all data computed by HaloMaker,
+in order to be used for the merger tree computation, in TreeMaker.
+
+This version offers the prospect of using one of the 2 halo finder available,
+a friend of friend algorithm an Adaptahop. Adaptahop unable the user to find
+sub-halos and to compute the structure tree of each halo.
+
+--------------------Compiling options-------------------------------------------
+
+View makefile
+
+1/ Enzo related FFLAGS:
+   -------------------
+ -DHDF: to read Enzo files use the compilation option -DHDF and use LIBS below 
+ checking that the path to these libs on your machine is correct
+	LIBS    =  -L/sw/lib -ljpeg -lz -lsz -lmfhdf -ldf 	 
+ -Dr8:if Enzo outputs were done in double precision 
+
+2/ RAMSES related FFLAGS:
+   ---------------------
+ -DMETALS: if RAMSES has computed metallicity from stellar feedback and you are reading version 3.0 i/o format
+
+3/ Other simulation related FFLAGS:
+   --------------------------------
+ -DBIG_RUN: for a normal (as opposed to resimulation) simulation whatever the i/o format.
+ -DRENORM: if you are analyzing the DM part of a hydro simulation and want to renormalize 
+ the mass of your dark matter particle so as to include the baryons (by pretending they are distributed like the DM):
+ this might be useful when one wants to compare a pure DM simulation to its DM + hydro counterpart
+ -DANG_MOM_OF_R: if you want the code to output the angular momentum of concentric shells for your DM halos
+
+--------------------parameters and options---------------------------------------
+
+All parameters are contained in file 'input_HaloMaker.dat' 
+
+' Cosmological parameters '
+af       : expansion factor at redshift 0
+lbox     : size of the box at redshift 0, [lbox] =  MPc
+H_f      : hubble constant at redshift 0, [H_f]  = Km/s/MPc
+omega_f  : Omega matter at redshift 0
+lambda_f : Omega lambda at redshift 0
+
+' Parameters for HaloMaker itself '
+npart    : minimum number of particles per halo ( this parameter is used in
+both halo finder'
+Gdpart   : For Gadget format: total number of particles in the (re)simulation
+... necessary if the N-body data files are cut in several pieces.
+nsteps   : Number of simulation snapshots to analyze
+cdm      : .true. to define the center of haloes and subhalo with its particle closest to the center of mass.
+	   .false. to define the center of the halo or subhalo with its particle with the highest density (this density is computed with the action "neighbors of compute_neiKDtree even when FOF is used. For halo that have les than 5*npart particles the particles closest to cdm is used.
+agor_file: output file for angular momentum of halos in shell, only if using -DANG_MOM_OF_R option 
+
+
+' Parameters for the halo finder '
+method   : Halofinder and subhalo selection method, choose one of these 4:
+	- FOF : use the friend of friend algorithm (halo only)
+	- HOP : use Adaptahop, subhaloes are not detected (halo only)
+	- DPM : use Adaptahop with the Density Profile method (subahalos and haloes are created by linking any node with its highest density maxima), a subhalo has a lower desnity maximum than its host,but can be more massive.
+	- MSM : use Adaptahop with the Most massive Submaxima method (subahalos and haloes are created by choosing the most massive subnode as maxima),  here a subhalo is always less massive than its host.
+	- BHM : use Adaptahop with the Branch History Method (take previous timestep into account to create haloes and subhalo), it derived from and uses MSM,  a subhalo is always less massive than its host.
+verbose     : .true. for verbose mode.	
+megaverbose : .true. for extra verbose mode
+
+' FOF parameters '
+b           :  fof parameter "b" (usually b=0.2) eps = b * (mean inter-particular
+distance'
+
+' Adaptahop parameters '
+
+nvoisins    : number of neighbors considered for computing the SPH density
+nhop        : number of stored nearest neighbors
+rhot        : density threshold. Particles with SPH density below this
+               density threshold are not selected. This thresholding will
+               define a number of connected regions, each of which corresponding
+               to a structure. For each of these structures, we aim to 
+               build a tree of substructures. Typically, one is interested
+               in finding the substructures of highly nonlinear objects. A value
+               often taken for rho_threshold is 80, which corresponds roughly
+               to friend-of-friend algorithm parameter b=2.
+
+fudge       : density threshold. Particles with SPH density below this
+               density threshold are not selected. This thresholding will
+               define a number of connected regions, each of which corresponding
+               to a structure. For each of these structures, we aim to 
+               build a tree of substructures. Typically, one is interested
+               in finding the substructures of highly nonlinear objects. A value
+               often taken for rho_threshold is 80, which corresponds roughly
+               to friend-of-friend algorithm parameter b=2.
+
+fudgeepsilon: this parameter can be seen as an Eulerian version of the thresholding
+               controlled by nmembthresh. 
+	       It defines the size of the smallest structures
+               that can exist physically and is related to force softening.
+               Basically, if epsilon is the softening parameter, substructures
+	       with typical radius smaller than epsilon are just coincidences
+	       and should not be considered. The typical radius of a structure
+	       is given by the mean square distance of particles belonging to
+	       it with respect to its center of gravity. 
+               The criterion for selecting a structure is thus              
+               radius_{substructure} > epsilon, where
+	       epsilon=fudgeepsilon*L/nbodies^{1/3}. 
+	       Fudgeepsilon is thus expressed in units of mean interparticle separation.
+              - For a treecode, fudgeepsilon is typically of the order of 1/20;
+              - For a PM code, fudgeepsilon is typically of the order of N_g/nbodies^{1/3}
+              where N_g is the resolution of the grid used for the force calculations,
+              i.e. of the order of 1 or 0.5.
+              - For a quasi-Lagrangian code such as RAMSES, putting constrains from fudgeepsilon 
+              is not really useful. Basically it corresponds to N_g/nbodies^{1/3} where N_g
+              would be the equivalent of the PM grid probed by the smallest AMR cells.              
+
+alphap     : a criterion can be applied to decide whether a substructure
+	       is selected or not. Here the choice of  alphap dictates by how
+	       much the maximum local density in this substructure should be larger
+
+--------------------inputs---------------------------------------------------
+
+'inputfiles_HaloMaker.dat'
+contains :  name of snapshot file, type,nbPes , file_num 
+
+type  is a flag for snapshot format:
+SN  : new treecode simple format, obsolete now: we keep it for historical reasons 
+Ra  : Ramses format
+Ra3 : Ramses 3 format
+Nzo : enzo format (nead libraries to read, this format is not red in input_output_bis)
+Gd  : Gadget
+
+file_num : is the index of the output corresponding to a snapshot.
+
+'input_HaloMaker.dat'
+contains all options listed above
+
+--------------------outputs---------------------------------------------------
+
+> tree_brick_'file_num' 
+
+format, unformatted
+
+Contains all data concerning their properties, structure tree, and list of
+particles.
+Those tree_brick_ are use by TreeMaker to build the hierarchical merger tree.
+
+' Header '
+nbodies : number of bodies in the simulation
+massp   : particle mass
+aexp    : expansion factor for this snapshot 
+omega_t : 
+age_univ: age of the universe in MYr
+nb_of_halos, nb_of_subhalos : number of halos and sub-halos
+
+' For each halo and sub-halo, (halos are listed first)' 
+nb_of_part        : number of particles belonging to the halo
+members           : array of dimension of_part, indexes of all particles  belonging
+to the halo
+h%my_number       : index of the halo or sub-halo 
+h%my_timestep     : timestep, the halo belong to
+h%level,h%hosthalo,h%hostsub,h%nbsub,h%nextsub : new data for version 2.0, corresponding to structure tree:
+  - A halo has a level 1, the background 0, sub-halos 2 or more.
+  - hosthalo is the halo which contains this sub-halo (background has
+  index 0)
+  - hostsub is the halo or subhalo which contains this sub-halo	
+  - nbsub is the number of sub-halo contained in this halo
+  - nextsub is a linked list to the next sub-halo in the the structure tree.
+h%m               : mass of halo in (10**-11 Solar masses)
+h%p%x,h%p%y,h%p%z : Position of the center of the halo ( define as the most
+dense particle if using Adaptahop, defined by the particle closest to the cdm if using fof)
+h%v%x,h%v%y,h%v%z : Velocity of the cdm
+h%L%x,h%L%y,h%L%z : Angular momentum
+h%r, h%sh%a, h%sh%b, h%sh%c : radius ( define as the distance between the
+center of the farthest particle), a,b,c are the principal axis
+h%ek,h%ep,h%et    : Kinetic, Potential and total energy of the halo 
+h%spin            : spin
+h%datas%rvir,h%datas%mvir,h%datas%tvir,h%datas%cvel : virial radius, virial
+mass, temperature at r_vir in K, circular velocity at r_vir in km/s
+h%halo_profile%rho_0,h%halo_profile%r_c : 
+
+> agorfile (only with -DANG_MOM_OF_R option)
+format: unformatted
+
+nb_of_halos,nb_of_subhalos
+number of shells
+' For each halo and sub-halo, (halos are listed first)'
+h%my_number, h%p%x, h%p%y, h%p%z, h%v%x, h%v%y, h%v%z,h%datas%rvir, h%datas%mvir, h%m, h%r, h%spin,amax, bmax, cmax, v(1,1:3), v(2,1:3), v(3,1:3),m(1:nshells), L(1:nshells)%x, L(1:nshells)%y, L(1:nshells)%z
+
+amax ,bmax and cmax are the axis of the smallest ellipsoid centered on the center of the halo containong all the particles of the halos
+v(:,1:3) are the axis vectors of the elliopsoid. |v| = 1
+m is the mass of each shell (in 10¹11 M_sun), L is the angular momentum in each shell 
+------------------------------------------------------------------------------

@@ -1,0 +1,10 @@
+*.o
+*.mod
+*.f90~
+*.optrpt
+HaloFinder
+HaloFinder_BR
+HaloFinder_contam
+GalaxyFinder
+GroupFinder_contam
+snap2mass
