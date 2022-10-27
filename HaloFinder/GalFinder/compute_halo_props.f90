@@ -298,6 +298,8 @@ contains
        if(allocated(mass)) deallocate(mass)
        if(allocated(age_st))deallocate(age_st)
        if(allocated(met_st))deallocate(met_st)
+       if(allocated(pf_st))deallocate(pf_st)  ! RS - Deallocate pristine frac array
+       if(allocated(pz_st))deallocate(pz_st)  ! RS - Deallocate primordial Z array
        if(allocated(chem_st))deallocate(chem_st)
        deallocate(liste_parts)
        return
@@ -438,6 +440,8 @@ contains
     if(allocated(mass)) deallocate(mass)
     if(allocated(age_st))deallocate(age_st)
     if(allocated(met_st))deallocate(met_st)
+    if(allocated(pf_st))deallocate(pf_st)  ! RS - Deallocate prist fraction
+    if(allocated(pz_st))deallocate(pz_st)  ! RS - Deallocate primordial Z
     if(allocated(chem_st))deallocate(chem_st)
     if(.not.cdm) deallocate(density)
 

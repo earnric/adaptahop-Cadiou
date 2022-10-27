@@ -161,6 +161,7 @@ module halo_defs
   real(kind=8),allocatable         :: pos(:,:),vel(:,:)
 #ifdef STARS
   real(kind=8),allocatable         :: chem_st(:,:),age_st(:),met_st(:)
+  real(kind=8),allocatable         :: pf_st(:),pz_st(:)  ! RS - Space for prist fraction and primordial Z
 #endif
   integer(kind=i8b), allocatable   :: idp(:)
   integer(kind=i8b), allocatable   :: idp_mapping(:)

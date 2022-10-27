@@ -640,6 +640,7 @@ subroutine read_ramses_new(repository)
     real(kind=8)                :: scale_l,scale_d,scale_t,dummy
     real(kind=8)                :: mtot,massres
     real(kind=8),allocatable    :: dumout(:),tmpp(:,:),tmpv(:,:),tmpm(:),tmpt(:),tmpz(:),tmpchem(:,:)
+    real(kind=8),allocatable    :: tmppf(:),tmppz(:) ! RS - space for prist fraction & primord Z
     ! cannot do otherwise than setting all the strings to a value larger than that of a line 
     ! in the input file and trim them whenever it is needed
     character(len=200)          :: line,name,value,nomfich
@@ -802,6 +803,8 @@ subroutine read_ramses_new(repository)
     allocate(famp(1:npart), tagp(1:npart))
 #ifdef METALS
     allocate(met_st(1:nstar))
+    allocate(pf_st(1:nstar)) ! RS - allocate space for prist fraction of star particle
+    allocate(pz_st(1:nstar)) ! RS - allocate space for primordial Z of star particle
     if(nchem.gt.0) allocate(chem_st(1:nstar,1:nchem))
 #endif
 
@@ -827,6 +830,8 @@ subroutine read_ramses_new(repository)
             & ,tmpt(1:npart2),idp(1:npart2),llp(1:npart2))
 #ifdef METALS
        allocate(tmpz(1:npart2))
+       allocate(tmppf(1:npart2))  ! RS - prist fract of star particle
+       allocate(tmppz(1:npart2))  ! RS - primod Z of star particle
        if(nchem.gt.0)allocate(tmpchem(1:npart2,1:nchem))
 #endif          
        ! read all particle positions
@@ -857,6 +862,8 @@ subroutine read_ramses_new(repository)
           read(1) tmpt(1:npart2)
 #ifdef METALS
           read(1) tmpz(1:npart2)
+          read(1) tmppf(1:npart2)  ! RS - Prist frac follows Z
+          read(1) tmppz(1:npart2)  ! RS - Primordial Z follows PF
           do ichem=1,nchem
              read(1) tmpchem(1:npart2,ichem)
           enddo
@@ -882,6 +889,8 @@ subroutine read_ramses_new(repository)
                 age_st(abs(idp(ipar)))  = real(tmpt(ipar),8)
 #ifdef METALS
                 met_st(abs(idp(ipar)))  = real(tmpz(ipar),8)
+                pf_st(abs(idp(ipar)))  = real(tmppf(ipar),8) ! RS - adding prist fraction for stars
+                pz_st(abs(idp(ipar)))  = real(tmppz(ipar),8) ! RS - adding primordial Z for stars
                 do ichem=1,nchem
                    chem_st(abs(idp(ipar)),ichem)  = real(tmpchem(ipar,ichem),8)
                 enddo
@@ -891,7 +900,7 @@ subroutine read_ramses_new(repository)
        end do
        deallocate(tmpp,tmpv,tmpm,tmpt,idp,llp)
 #ifdef METALS
-       deallocate(tmpz)
+       deallocate(tmpz,tmppf,tmppz)
        if(nchem.gt.0)deallocate(tmpchem)
 #endif          
     end do
@@ -1013,8 +1022,9 @@ subroutine read_ramses_new(repository)
     character(len=len_trim(data_dir)+len_trim(file_num)+11) :: filename
     integer(kind=4) ,allocatable                            :: members(:)
     real(kind=8) ,allocatable                            :: mass_memb(:),age_memb(:),met_memb(:),mdump(:)
+    real(kind=8) ,allocatable                            :: pf_memb(:),pz_memb(:) ! RS
     real(kind=8) ,allocatable                            :: pos_memb(:,:),vel_memb(:,:),chem_memb(:,:)
-    logical                                                 :: done
+    logical                                              :: done
     
     if(dump_stars)then
        nchar   = '00'//TRIM(file_num)
@@ -1057,6 +1067,8 @@ subroutine read_ramses_new(repository)
                &,age_memb(1:nb_of_parts(i)),mdump(1:nb_of_parts(i)))
 #ifdef METALS
           allocate(met_memb(1:nb_of_parts(i)))
+          allocate(pf_memb(1:nb_of_parts(i)))  ! RS - space for prist fraction
+          allocate(pz_memb(1:nb_of_parts(i)))  ! RS - space for primordial Z
           if(nchem.gt.0)allocate(chem_memb(1:nb_of_parts(i),1:nchem))
 #endif
        endif
@@ -1074,6 +1086,8 @@ subroutine read_ramses_new(repository)
              age_memb  (j)=age_st(start)
 #ifdef METALS
              met_memb(j)=met_st(start)
+             pf_memb(j)=pf_st(start)  ! RS - Adding prist fraction
+             pz_memb(j)=pz_st(start)  ! RS - Adding primord Z
              do ichem=1,nchem
                 chem_memb(j,ichem)=chem_st(start,ichem)
              enddo
@@ -1108,6 +1122,8 @@ subroutine read_ramses_new(repository)
            write(9)dble(age_memb)
 #ifdef METALS
            write(9)dble(met_memb)
+           write(9)dble(pf_memb)  ! RS - write the prist fraction
+           write(9)dble(pz_memb)  ! RS - write the primordial Z
            do ichem=1,nchem
               mdump(1:nb_of_parts(i))=chem_memb(1:nb_of_parts(i),ichem)
               write(9)dble(mdump)
@@ -1116,7 +1132,7 @@ subroutine read_ramses_new(repository)
            close(9)
            deallocate(mass_memb,pos_memb,vel_memb,age_memb,mdump)
 #ifdef METALS
-           deallocate(met_memb)
+           deallocate(met_memb, pf_memb, pz_memb) ! RS
            if(nchem.gt.0)deallocate(chem_memb)
 #endif
        endif

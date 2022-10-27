@@ -321,6 +321,8 @@ contains
 #ifdef STARS
        if(allocated(age_st))deallocate(age_st)
        if(allocated(met_st))deallocate(met_st)
+       if(allocated(pf_st))deallocate(pf_st) ! RS
+       if(allocated(pz_st))deallocate(pz_st) ! RS
        if(allocated(chem_st))deallocate(chem_st)
        call ct_clear_cosmo()
 #endif
@@ -559,6 +561,8 @@ contains
 #ifdef STARS
     if(allocated(age_st))deallocate(age_st)
     if(allocated(met_st))deallocate(met_st)
+    if(allocated(pf_st))deallocate(pf_st)  ! RS - pristie fraction
+    if(allocated(pz_st))deallocate(pz_st)  ! RS - primordial Z
     if(allocated(chem_st))deallocate(chem_st)
     call ct_clear_cosmo()
 #endif

@@ -642,7 +642,8 @@ subroutine read_ramses_new(repository)
     real(kind=8),allocatable    :: dumout(:),tmpp(:,:),tmpv(:,:),tmpm(:),tmpt(:)
     integer(i8b),allocatable    :: tmpidp(:)
 #ifdef STARS
-    real(kind=8),allocatable    :: tmpz(:),tmpchem(:,:)
+    real(kind=8),allocatable    :: tmpz(:),tmpchem(:,:) ! RS - tmp arrays for metals and chemistry vars
+    real(kind=8),allocatable    :: tmppf(:),tmppz(:,:)  ! RS - tmp arrays for prist frac and primordial z
 #endif
     ! cannot do otherwise than setting all the strings to a value larger than that of a line
     ! in the input file and trim them whenever it is needed
@@ -653,6 +654,7 @@ subroutine read_ramses_new(repository)
     real(kind=8),dimension(:)  ,allocatable::mass_tmp
 #ifdef STARS
     real(kind=8),allocatable    ::age_st_tmp(:), met_st_tmp(:), chem_st_tmp(:,:)
+    real(kind=8),allocatable    ::pf_st_tmp(:), pz_st_tmp(:) ! Arrays for stellar prist fraction and primord Z
 #endif
     integer(kind=i8b),allocatable::idp_tmp(:)
     integer(kind=1),allocatable :: family_tmp(:)
@@ -722,7 +724,8 @@ subroutine read_ramses_new(repository)
     if (.not. ok) then
        write(errunit,*)'File '//trim(nomfich)//' not found'
        stop
-    else
+    else !! Read in the info_000xx.txt file -- the RAMSES snap info file
+       !! Read the length, density, and time constants for the snap
        open(unit=10,file=nomfich,status='old',form='formatted')
        do
           read (10,'(a)',end=2) line
@@ -747,7 +750,7 @@ subroutine read_ramses_new(repository)
     endif
 
     !write(errunit,*) 'scale_l,scale_d,scale_t: ',scale_l,scale_d,scale_t
-    Lboxp          = boxlen*scale_l/3.08e24/aexp_ram ! converts cgs to Mpc comoving
+    Lboxp          = boxlen*scale_l/3.08e24/aexp_ram ! converts cgs to Mpc comoving (3.08e24 cm/Mpc)
     !write(errunit,*) 'af,hf,lboxp,ai,aexp: ',af,h_f,lboxp,ai,aexp_ram
     aexp           = aexp_ram*af
     omega_f        = omega_m
@@ -794,7 +797,8 @@ subroutine read_ramses_new(repository)
        read(1) nsink
        close(1)
        npart = npart+npart2
-       !write(errunit,*) 'nstar',icpu,npart,npart2,nstar,nsink
+       write(errunit,*) 'icpu,npart,npart2,nstar,nsink'
+       write(errunit,*) 'nstar',icpu,npart,npart2,nstar,nsink
     end do
 
 !!$    ! TODO: use header to pre-allocate
@@ -841,6 +845,8 @@ subroutine read_ramses_new(repository)
 #ifdef STARS
     allocate(age_st_tmp(1:nbodies))
     allocate(met_st_tmp(1:nbodies))
+    allocate(pf_st_tmp(1:nbodies))
+    allocate(pz_st_tmp(1:nbodies))
     if(nchem.gt.0) allocate(chem_st_tmp(1:nbodies,1:nchem))
 #endif
     allocate(idp_tmp(1:nbodies))
@@ -869,6 +875,8 @@ subroutine read_ramses_new(repository)
             & ,tmpt(1:npart2),tmpidp(1:npart2),levelp(1:npart2), tmpfam(1:npart2),tmptag(1:npart2))
 #ifdef STARS
        allocate(tmpz(1:npart2))
+       allocate(tmppf(1:npart2)) ! temp array for pristine fraction of star
+       allocate(tmppz(1:npart2)) ! temp array for primordial Z
        if (nchem.gt.0) allocate(tmpchem(1:npart2,1:nchem))
 #endif
        ! read all particle positions
@@ -898,6 +906,8 @@ subroutine read_ramses_new(repository)
           ! read(1) tmpt(1:npart2)
 #ifdef STARS
           read(1) tmpz(1:npart2)
+          read(1) tmppf(1:npart2) ! RS - read the pristine fraction of star particle
+          read(1) tmppz(1:npart2) ! RS - read the primordial Z of the star particle
           do ichem=1,nchem
              read(1) tmpchem(1:npart2,ichem)
           enddo
@@ -958,6 +968,8 @@ subroutine read_ramses_new(repository)
 #ifdef STARS
              age_st_tmp(npart_tmp)  = real(tmpt(ipar),8)
              met_st_tmp(npart_tmp)  = real(tmpz(ipar),8)
+             pf_st_tmp(npart_tmp)   = real(tmppf(ipar),8) ! RS - pristine fraction
+             pz_st_tmp(npart_tmp)   = real(tmppz(ipar),8) ! RS - primordial Z
              do ichem=1,nchem
                 chem_st_tmp(npart_tmp,ichem)  = real(tmpchem(ipar,ichem),8)
              enddo
@@ -971,7 +983,7 @@ subroutine read_ramses_new(repository)
 
        deallocate(tmpp,tmpv,tmpm,tmpt,tmpidp,levelp, tmpfam, tmptag)
 #ifdef STARS
-       deallocate(tmpz)
+       deallocate(tmpz,tmppf,tmppz)
        if(nchem.gt.0)deallocate(tmpchem)
 #endif
 
@@ -1004,8 +1016,12 @@ subroutine read_ramses_new(repository)
     age_st(1:npart) = age_st_tmp(1:npart)
     ! TODO: perfect place to convert ages
     allocate(met_st(1:npart))
+    allocate(pf_st(1:npart))  ! RS - Allocate space for prist fraction
+    allocate(pz_st(1:npart))  ! RS - Allocate space for primord Z
     met_st(1:npart) = met_st_tmp(1:npart)
-    deallocate(age_st_tmp,met_st_tmp)
+    pf_st(1:npart) = pf_st_tmp(1:npart) ! RS - Copy out the star pf
+    pz_st(1:npart) = pz_st_tmp(1:npart) ! RS - Copy out the star pz
+    deallocate(age_st_tmp,met_st_tmp,pf_st_tmp,pz_st_tmp)
 
     if(nchem.gt.0) then
        allocate(chem_st(1:npart,1:nchem))
@@ -1146,9 +1162,10 @@ subroutine read_ramses_new(repository)
     character(len=len_trim(data_dir)+len_trim(file_num)+11) :: filename
     integer(kind=i8b) ,allocatable                            :: members(:)
     real(kind=8) ,allocatable                            :: mass_memb(:),age_memb(:),met_memb(:),mdump(:)
+    real(kind=8) ,allocatable                            :: pf_memb(:),pz_memb(:) ! RS - Adding star pf and pz
     real(kind=8) ,allocatable                            :: pos_memb(:,:),vel_memb(:,:),chem_memb(:,:)
     integer(kind=1), allocatable                         :: fam_memb(:)
-    logical                                                 :: done
+    logical                                              :: done
 
 #ifdef STARS
     if(dump_stars)then
@@ -1205,7 +1222,8 @@ subroutine read_ramses_new(repository)
 #ifdef STARS
        if(dump_stars)then
           allocate(pos_memb(1:nb_of_parts(i),1:3),vel_memb(1:nb_of_parts(i),1:3) &
-               &,age_memb(1:nb_of_parts(i)),mdump(1:nb_of_parts(i)),met_memb(1:nb_of_parts(i)))
+               &,age_memb(1:nb_of_parts(i)),mdump(1:nb_of_parts(i)),met_memb(1:nb_of_parts(i)) &
+               &,pf_memb(1:nb_of_parts(i)),pz_memb(1:nb_of_parts(i))) ! RS - allocat pf, pz
           if(nchem.gt.0)allocate(chem_memb(1:nb_of_parts(i),1:nchem))
        endif
 #endif
@@ -1222,8 +1240,10 @@ subroutine read_ramses_new(repository)
              vel_memb(j,1)=vel(start,1)
              vel_memb(j,2)=vel(start,2)
              vel_memb(j,3)=vel(start,3)
-             age_memb  (j)=age_st(start)
+             age_memb(j)=age_st(start)
              met_memb(j)=met_st(start)
+             pf_memb(j)=pf_st(start)  ! RS - copy out the prist frac data
+             pz_memb(j)=pz_st(start)  ! RS - copy out the primord Z data
              do ichem=1,nchem
                 chem_memb(j,ichem)=chem_st(start,ichem)
              enddo
@@ -1275,6 +1295,8 @@ subroutine read_ramses_new(repository)
            write(9)pack(members, fam_memb==FAM_STAR)
            write(9)pack(dble(age_memb), fam_memb==FAM_STAR)
            write(9)pack(dble(met_memb), fam_memb==FAM_STAR)
+           write(9)pack(dble(pf_memb), fam_memb==FAM_STAR) ! RS - Write primord fraction?
+           write(9)pack(dble(pz_memb), fam_memb==FAM_STAR) ! RS - Write pristine Z?
            do ichem=1,nchem
               mdump(1:nb_of_parts(i))=chem_memb(1:nb_of_parts(i),ichem)
               write(9)pack(dble(mdump), fam_memb==FAM_STAR)
@@ -1283,7 +1305,7 @@ subroutine read_ramses_new(repository)
 #ifdef ALLPARTS
           end if  ! End ensure nstar>0
 #endif
-           deallocate(pos_memb,vel_memb,age_memb,mdump,met_memb)
+           deallocate(pos_memb,vel_memb,age_memb,mdump,met_memb,pf_memb,pz_memb)
            if(nchem.gt.0)deallocate(chem_memb)
        endif
 #endif

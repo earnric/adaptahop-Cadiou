@@ -103,6 +103,7 @@ module halo_defs
   real(kind=8),allocatable         :: pos(:,:),vel(:,:),chem_st(:,:)
   real(kind=8)                     :: massp
   real(kind=8),allocatable         :: epsvect(:),mass(:),age_st(:),met_st(:)
+  real(kind=8),allocatable         :: pf_st(:),pz_st(:) !! RS - Support for stellar pristine fract & primord Z
   real(kind=8)                     :: omega_t,omega_lambda_t,omega_f,omega_lambda_f,omega_c_f
   real(kind=8)                     :: rho_crit,aexp,Lboxp,mboxp,af,ai,Lf,H_f,H_i
   real(kind=8)                     :: age_univ,Lbox_pt,Lbox_pt2,Hub_pt,omega_0,hubble,omega_lambda_0
