@@ -797,10 +797,10 @@ subroutine read_ramses_new(repository)
        read(1) nsink
        close(1)
        npart = npart+npart2
-       write(errunit,*) 'icpu,npart,npart2,nstar,nsink'
-       write(errunit,*) 'nstar',icpu,npart,npart2,nstar,nsink
+      !  write(errunit,*) 'icpu,npart,npart2,nstar,nsink'
+      !  write(errunit,*) 'nstar',icpu,npart,npart2,nstar,nsink
     end do
-
+    write(errunit,*) 'npart=',npart
 !!$    ! TODO: use header to pre-allocate
 !!$    ! Get the number of DM particles
 !!$    nomfich=TRIM(repository)//'/header_'//TRIM(nchar)//'.txt'
