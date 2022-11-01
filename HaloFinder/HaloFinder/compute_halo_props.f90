@@ -73,7 +73,7 @@ contains
   subroutine init_cosmo()
 
     ! This routine reads in the input_HaloMaker.dat file which contains the cosmological
-  ! and technical parameters of the N-Body simulation to analyze.
+    ! and technical parameters of the N-Body simulation to analyze.
 
     use neiKDtree
     use fof
