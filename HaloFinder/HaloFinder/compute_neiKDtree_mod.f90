@@ -847,10 +847,10 @@ subroutine select_with_MS_method
      do inode = 1, nnodes
         if(node_to_struct(inode).le.0) stop 'node_to_struct is nil'
         imother = node(inode)%mother
-        print*, "in select_with_MS_method, imother=", imother
-        if (imother.eq.0) then
+        if (imother.eq.0) then ! RS DEBUG
+           write(errunit,*) , "in select_with_MS_method, imother=", imother
            imother = 1
-           print*, "imother index reset"
+           write(errunit,*) , "imother index reset"
         end if
         if((imother.le.0).or.(imother.gt.0.and.(node_to_struct(imother).ne.node_to_struct(inode)))) then
            if(node(inode)%mass.ne.npartcheck(node_to_struct(inode))) then

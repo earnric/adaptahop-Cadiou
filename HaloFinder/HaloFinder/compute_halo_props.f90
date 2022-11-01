@@ -3451,6 +3451,11 @@ recursive subroutine det_halo_center_sphere(h,x0,y0,z0,r0,fam)
        ! index of shell containing particle
        r_ell  = sqrt((dra / amax)**2 + (drb / bmax)**2 + (drc / cmax)**2)
        i_ell  = int(r_ell*nshells)
+       if (i_ell.eq.0) then
+         write(errunit,*) 'index for m is 0 ERROR. Should always be 1 or larger ', i_ell ! RS DEBUG
+         write(errunit,*) 'FIXING it'
+         i_ell = 1
+       end if
        if (i_ell > nshells) then
           write(errunit,'(a)') '> Problem in get_ang_momentum_per_shell : i_ell > nshells '
           write(errunit,*) i_ell,nshells
