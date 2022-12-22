@@ -19,8 +19,8 @@
 # --- Use the -DANG_MOM_OF_R option if you want the code to output the angular momentum of concentric shells for your DM halos
 ######
 
-COMPILO = "ifort"
-OPTIONS = -DMETALS -DBIG_RUN #-DRENORM -DANG_MOM_OF_R
+COMPILO = "gfortran"
+OPTIONS = -DMETALS -DBIG_RUN -DBN98 #-DRENORM -DANG_MOM_OF_R
 EXEC = GalFinder
 
 

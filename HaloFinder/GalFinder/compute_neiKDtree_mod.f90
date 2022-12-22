@@ -2215,7 +2215,7 @@ subroutine compute_saddle_list
         if (ineig.gt.0) then
 ! sort the saddle points by decreasing order
            allocate(indx(ineig))
-           call indexx(ineig,rho_sad,indx)
+           call indexx(int8(ineig),rho_sad,indx)
            do i=1,ineig
               ineig2=indx(i)
               group(igroup1)%isad_gr(ineig-i+1)=isad(ineig2)
