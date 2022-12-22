@@ -1295,8 +1295,8 @@ subroutine read_ramses_new(repository)
            write(9)pack(members, fam_memb==FAM_STAR)
            write(9)pack(dble(age_memb), fam_memb==FAM_STAR)
            write(9)pack(dble(met_memb), fam_memb==FAM_STAR)
-           write(9)pack(dble(pf_memb), fam_memb==FAM_STAR) ! RS - Write primord fraction?
-           write(9)pack(dble(pz_memb), fam_memb==FAM_STAR) ! RS - Write pristine Z?
+         !   write(9)pack(dble(pf_memb), fam_memb==FAM_STAR) ! RS - Write primord fraction?
+         !   write(9)pack(dble(pz_memb), fam_memb==FAM_STAR) ! RS - Write pristine Z?
            do ichem=1,nchem
               mdump(1:nb_of_parts(i))=chem_memb(1:nb_of_parts(i),ichem)
               write(9)pack(dble(mdump), fam_memb==FAM_STAR)
@@ -1305,7 +1305,7 @@ subroutine read_ramses_new(repository)
 #ifdef ALLPARTS
           end if  ! End ensure nstar>0
 #endif
-           deallocate(pos_memb,vel_memb,age_memb,mdump,met_memb,pf_memb,pz_memb)
+           deallocate(pos_memb,vel_memb,age_memb,mdump,met_memb,pf_memb,pz_memb) ! RS 
            if(nchem.gt.0)deallocate(chem_memb)
        endif
 #endif

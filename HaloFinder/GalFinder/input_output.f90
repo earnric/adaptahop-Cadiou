@@ -1022,7 +1022,7 @@ subroutine read_ramses_new(repository)
     character(len=len_trim(data_dir)+len_trim(file_num)+11) :: filename
     integer(kind=4) ,allocatable                            :: members(:)
     real(kind=8) ,allocatable                            :: mass_memb(:),age_memb(:),met_memb(:),mdump(:)
-    real(kind=8) ,allocatable                            :: pf_memb(:),pz_memb(:) ! RS
+    real(kind=8) ,allocatable                            :: pf_memb(:), pz_memb(:) ! RS - prist frac & primord Z
     real(kind=8) ,allocatable                            :: pos_memb(:,:),vel_memb(:,:),chem_memb(:,:)
     logical                                              :: done
     
@@ -1122,8 +1122,8 @@ subroutine read_ramses_new(repository)
            write(9)dble(age_memb)
 #ifdef METALS
            write(9)dble(met_memb)
-           write(9)dble(pf_memb)  ! RS - write the prist fraction
-           write(9)dble(pz_memb)  ! RS - write the primordial Z
+         !   write(9)dble(pf_memb)  ! RS - write the prist fraction
+         !   write(9)dble(pz_memb)  ! RS - write the primordial Z
            do ichem=1,nchem
               mdump(1:nb_of_parts(i))=chem_memb(1:nb_of_parts(i),ichem)
               write(9)dble(mdump)
@@ -1132,7 +1132,7 @@ subroutine read_ramses_new(repository)
            close(9)
            deallocate(mass_memb,pos_memb,vel_memb,age_memb,mdump)
 #ifdef METALS
-           deallocate(met_memb, pf_memb, pz_memb) ! RS
+           deallocate(met_memb, pf_memb, pz_memb) ! RS - deallocate prist fraction & primord Z
            if(nchem.gt.0)deallocate(chem_memb)
 #endif
        endif
