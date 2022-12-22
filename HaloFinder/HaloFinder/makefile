@@ -19,10 +19,10 @@
 ######
 
 COMPILO = "gfortran"
-OPTIONS = -DBN98 #-DOLD_RAMSES #-DSIMPLE_OUTPUTS #-DIOGROUPSIZEREP=1200
+OPTIONS = -DBN98 -DANG_MOM_OF_R #-DSIMPLE_OUTPUTS #-DIOGROUPSIZEREP=1200
 TYPE    = 1
-BIGRUN  = 0
-CONTAM  = 1
+BIGRUN  = 1
+CONTAM  = 0
 LONGINT = 0
 OLD     = 0
 
@@ -64,7 +64,7 @@ EXECNAME := $(subst $(SPACE),$(EMPTY),$(EXECtmp))
 ifeq ($(COMPILO),"gfortran")
 F90C    = gfortran -fallow-argument-mismatch
 DEBUG   = -g -C
-FFLAGS  = ${OPTIONS} -fbounds-check -fbacktrace -cpp
+FFLAGS  = ${OPTIONS} -fbounds-check -fbacktrace -cpp ${DEBUG}
 endif
 
 ifeq ($(COMPILO),"pgf90")
@@ -84,7 +84,7 @@ ifeq ($(COMPILO),"ifort")
  OPTIM   = -O3 -g -traceback -xAVX -cpp -free -heap-arrays #-qopt-report #-guide
  #OPTIM   = -fast
  FFLAGS  = ${OPTIONS} ${OPTIM}
- #FFLAGS  = ${OPTIONS} ${DEBUG}
+ #FFLAGS  = ${OPTIONS} ${DEBUG} # RS DEBUG
 endif
 
 
