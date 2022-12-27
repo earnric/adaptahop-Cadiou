@@ -1563,7 +1563,7 @@ contains
            write(*,*) 'halo bugged',h%my_number,mvir,rvir
            write(*,*) 'The half mass radius (ellipsoid)'
            write(*,*) 'is larger than the farthest particle'
-           stop
+         !   stop
        end if
     else
        write(*,*) 'halo bugged',h%my_number,mvir,rvir
